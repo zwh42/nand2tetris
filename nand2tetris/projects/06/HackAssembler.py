@@ -122,15 +122,7 @@ class HackAssembler:
             line_number += 1
 
       
-    def extract_symbol(self):
-        self.logger.debug("constrcut symbol table...")
-        line_number = 0
-        updated_lines = []
-        for line in self.src_lines:
-            if not self.parse_label(line):
-                self.parse_variable(line)
-        
-            line_number += 1
+
           
             
 
@@ -169,8 +161,8 @@ class HackAssembler:
                 temp_lines.append(line)
         
         self.src_lines = temp_lines
-        print("updated symbol table:")
-        print(self.symbol_table)
+        self.logger.debug("updated symbol table:")
+        self.logger.debug(self.symbol_table)
         
 
     def handle_lines(self):
@@ -184,8 +176,9 @@ class HackAssembler:
             temp_lines.append(line)
         
         self.out_lines = temp_lines
+        self.logger.debug("assemble finished!")
         for src, out in zip(self.src_lines, self.out_lines):
-            print("src: {}, assemble: {}".format(src, out))
+            self.logger.debug("src: {}, assemble: {}".format(src, out))
         
 
 
@@ -209,7 +202,7 @@ class HackAssembler:
             result = self.decimal_to_binary(var, 15)
         
         result = "0" + result
-        print("A instruction: {}, result = {}, length = {}".format(line, result, len(result)))
+        self.logger.debug("A instruction: {}, result = {}, length = {}".format(line, result, len(result)))
         return result
 
     
@@ -238,7 +231,7 @@ class HackAssembler:
         
         #print("line: {}, dest: {}, comp: {}, jump: {}".format(line, dest, comp, jump))
         result = result + self.comp_table[comp] + self.dest_table[dest] + self.jump_table[jump]
-        print("C-line: {}, result: {}".format(line, result))
+        self.logger.debug("C-line: {}, result: {}".format(line, result))
         assert len(result) == 16
         return result
 
@@ -248,24 +241,6 @@ class HackAssembler:
         value = int(value)
         format_str = "{0:0" + str(width) + "b}"
         return format_str.format(value)
-
-    
-    def parse_label(self, line):
-        print("parse_label line number: " , line_number)
-        m = re.compile("\((.+)\)").search(line)
-        if m is not None:
-            label = m.group(1)
-            if label not in self.symbol_table:
-                label_value = line_number - self.lable_offset
-                self.symbol_table[label] = label_value
-                self.logger.debug('add new label "{}" to symbol tabel with value {}, label offset  = {}'
-                                  .format(label, label_value, self.lable_offset))
-                self.lable_offset -= 1
-            else:
-                self.logger.debug('label "{}" is aleady inside symbol table'.format(label))
-            return True
-        else:
-            return False
 
     
     def output_file(self):
